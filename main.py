@@ -79,4 +79,3 @@ st.altair_chart(chart)
 #Add footer lik to data source
 # Create a footer at the bottom of the sidebar
 st.sidebar.markdown('<div style="text-align: center;">Data source API: <a href="https://www.hvakosterstrommen.no/strompris-api">hvakosterstrommen.no</a></div>', unsafe_allow_html=True)
-st.sidebar.markdown('<p><a href="https://www.hvakosterstrommen.no"><img src="https://ik.imagekit.io/ajdfkwyt/hva-koster-strommen/strompriser-levert-av-hvakosterstrommen_oTtWvqeiB.png" alt="Strømpriser levert av Hva koster strømmen.no" width="200" height="45"></a></p>')
