@@ -51,7 +51,7 @@ if start_date > end_date:
 # Fetch and accumulate data for the selected date range
 @st.cache(allow_output_mutation=True)
 def fetch_data(start_date, end_date, selected_price_area):
-    date_range = pd.date_range(start=start_date, end=end_date, closed=None)
+    date_range = pd.date_range(start=start_date, end=end_date)
     data_frames = []
     for date in date_range:
         data_frame = get_energy_prices_for_date(date, selected_price_area)
