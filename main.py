@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import streamlit as st
 import plotly.express as px
+import plotly.graph_objects as go
 
 # Function to get energy prices for a specific date and area
 def get_energy_prices_for_date(date, price_area):
@@ -21,10 +22,14 @@ def get_energy_prices_for_date(date, price_area):
         return None
 
 # Create a Streamlit app
-st.title("Norway's Energy Prices")
+st.title("🇳🇴⚡️ Norway's Electricity Prices")
 
-# Area selection in the main area
-price_area = st.selectbox("Select Area", ["NO1 - Oslo / Øst-Norge", "NO2 - Kristiansand / Sør-Norge", "NO3 - Trondheim / Midt-Norge", "NO4 - Tromsø / Nord-Norge", "NO5 - Bergen / Vest-Norge"])
+paragraph_text = 'Explore real-time and historical electricity prices in different regions of Norway. Select your area, customize your date range, and choose your preferred currency to analyze energy costs.'
+
+st.markdown('<span style="font-size: 18px;">Explore real-time and historical electricity prices in different regions of Norway. Select your area, customize your date range, and choose your preferred currency to analyze energy costs.</span>', unsafe_allow_html=True)
+
+# Area selection in the sidebar
+price_area = st.sidebar.selectbox("Select Area", ["NO1 - Oslo / Øst-Norge", "NO2 - Kristiansand / Sør-Norge", "NO3 - Trondheim / Midt-Norge", "NO4 - Tromsø / Nord-Norge", "NO5 - Bergen / Vest-Norge"])
 price_area_mapping = {
     "NO1 - Oslo / Øst-Norge": "NO1",
     "NO2 - Kristiansand / Sør-Norge": "NO2",
@@ -36,8 +41,8 @@ selected_price_area = price_area_mapping[price_area]
 
 # Date range selection in the main area
 current_date = datetime.now()
-start_date = st.date_input("Select Start Date", value=current_date - timedelta(days=0))
-end_date = st.date_input("Select End Date", value=current_date)
+start_date = st.sidebar.date_input("Select Start Date", value=current_date - timedelta(days=0))
+end_date = st.sidebar.date_input("Select End Date", value=current_date)
 
 if start_date > end_date:
     st.error("Start date should be before or the same as the end date.")
@@ -55,21 +60,35 @@ def fetch_data(start_date, end_date, selected_price_area):
 
 all_data = fetch_data(start_date, end_date, selected_price_area)
 
-# User selects the currency
-currency = st.selectbox('Select Currency', ['NOK', 'EUR'])
+# User selects the currency in the sidebar
+currency = st.sidebar.selectbox('Select Currency', ['NOK', 'EUR'])
 currency_mapping = {
     'NOK': 'NOK_per_kWh',
     'EUR': 'EUR_per_kWh',
 }
 currency_column = currency_mapping[currency]
 
-# Create a line chart for hourly prices using Plotly Express
-fig = px.line(all_data, x='time_start', y=currency_column, title="Hourly Prices")
-fig.update_xaxes(title_text="Time")
-fig.update_yaxes(title_text=f"{currency} per kWh")
+# Create a responsive line chart for hourly prices using Plotly Graph Objects
+fig = go.Figure()
+
+# Add the line chart trace
+fig.add_trace(go.Scatter(x=all_data['time_start'], y=all_data[currency_column], mode='lines', name='Hourly Prices'))
+
+# Update the layout to make the chart responsive
+fig.update_layout(
+    title="Hourly Prices",
+    xaxis_title="Time",
+    yaxis_title=f"{currency} per kWh",
+    autosize=True,  # Set autosize to True for responsiveness
+)
 
 # Display the chart using st.plotly_chart
 st.plotly_chart(fig)
 
+
+# Display dynamic information
+current_price = all_data.iloc[-1]["NOK_per_kWh"]
+st.markdown(f"The current price for <strong>{price_area}</strong> is <strong>{current_price} {currency}</strong> per kWh.", unsafe_allow_html=True)
+
 # Add a footer link to the data source
-st.markdown('<div style="text-align: center;">Data source API: <a href="https://www.hvakosterstrommen.no/strompris-api">hvakosterstrommen.no</a></div>', unsafe_allow_html=True)
+st.sidebar.markdown('<div style="text-align: center;">Data source API: <a href="https://www.hvakosterstrommen.no/strompris-api">hvakosterstrommen.no</a></div>', unsafe_allow_html=True)
