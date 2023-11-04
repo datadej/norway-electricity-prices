@@ -2,7 +2,7 @@
 name = "oslo-electricity-prices"
 version = "0.1.0"
 description = ""
-authors = ["datadej <dejvid.no@gmail.com>"]
+authors = ["datadej <dejvid.app@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 
