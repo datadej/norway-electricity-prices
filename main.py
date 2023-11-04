@@ -2,7 +2,6 @@ import requests
 from datetime import datetime, timedelta
 import pandas as pd
 import streamlit as st
-import plotly.express as px
 import plotly.graph_objects as go
 
 # Function to get energy prices for a specific date and area
@@ -85,9 +84,12 @@ fig.update_layout(
 # Display the chart using st.plotly_chart
 st.plotly_chart(fig)
 
-
 # Display dynamic information
-current_price = all_data.iloc[-1]["NOK_per_kWh"]
+if currency == 'NOK':
+    current_price = all_data.iloc[-1]["NOK_per_kWh"]
+else:
+    current_price = all_data.iloc[-1]["EUR_per_kWh"]
+
 st.markdown(f"The current price for <strong>{price_area}</strong> is <strong>{current_price} {currency}</strong> per kWh.", unsafe_allow_html=True)
 
 # Add a footer link to the data source
