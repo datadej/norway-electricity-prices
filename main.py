@@ -75,7 +75,7 @@ fig.add_trace(go.Scatter(x=all_data['time_start'], y=all_data[currency_column], 
 
 # Update the layout to make the chart responsive
 fig.update_layout(
-    title="Hourly Prices",
+    title=f"Electricity prices from {start_date} until {end_date}",
     xaxis_title="Time",
     yaxis_title=f"{currency} per kWh",
     autosize=True,  # Set autosize to True for responsiveness
