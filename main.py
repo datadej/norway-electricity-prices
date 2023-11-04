@@ -2,7 +2,7 @@ import requests
 from datetime import datetime, timedelta
 import pandas as pd
 import streamlit as st
-import altair as alt
+import plotly.express as px
 
 # Function to get energy prices for a specific date and area
 def get_energy_prices_for_date(date, price_area):
@@ -20,18 +20,11 @@ def get_energy_prices_for_date(date, price_area):
         st.error(f"Failed to fetch data from {full_url}. Status code: {response.status_code}")
         return None
 
-# Set year, month, and day to the current date
-current_date = datetime.now()
-year = current_date.year
-month = current_date.strftime("%m")
-day = current_date.strftime("%d")
-
-# Create a Streamlit app with the sidebar open by default
+# Create a Streamlit app
 st.title("Norway's Energy Prices")
-st.sidebar.header("Selections")
 
-# Area selection in the sidebar
-price_area = st.sidebar.selectbox("Select Area", ["NO1 - Oslo / Øst-Norge", "NO2 - Kristiansand / Sør-Norge", "NO3 - Trondheim / Midt-Norge", "NO4 - Tromsø / Nord-Norge", "NO5 - Bergen / Vest-Norge"])
+# Area selection in the main area
+price_area = st.selectbox("Select Area", ["NO1 - Oslo / Øst-Norge", "NO2 - Kristiansand / Sør-Norge", "NO3 - Trondheim / Midt-Norge", "NO4 - Tromsø / Nord-Norge", "NO5 - Bergen / Vest-Norge"])
 price_area_mapping = {
     "NO1 - Oslo / Øst-Norge": "NO1",
     "NO2 - Kristiansand / Sør-Norge": "NO2",
@@ -41,9 +34,10 @@ price_area_mapping = {
 }
 selected_price_area = price_area_mapping[price_area]
 
-# Date range selection in the sidebar
-start_date = st.sidebar.date_input("Select Start Date", value=current_date - timedelta(days=0))
-end_date = st.sidebar.date_input("Select End Date", value=current_date)
+# Date range selection in the main area
+current_date = datetime.now()
+start_date = st.date_input("Select Start Date", value=current_date - timedelta(days=0))
+end_date = st.date_input("Select End Date", value=current_date)
 
 if start_date > end_date:
     st.error("Start date should be before or the same as the end date.")
@@ -61,21 +55,21 @@ def fetch_data(start_date, end_date, selected_price_area):
 
 all_data = fetch_data(start_date, end_date, selected_price_area)
 
-# Create a line chart for hourly prices
-chart = alt.Chart(all_data).mark_line().encode(
-    x=alt.X('time_start:T', title="Time"),
-    y=alt.Y(st.sidebar.selectbox("Select Currency", ["NOK_per_kWh", "EUR_per_kWh"]), title="Price per kWh"),
-    tooltip=["time_start:T", "NOK_per_kWh:Q", "EUR_per_kWh:Q"]
-).properties(
-    width=800,
-    height=400,
-    title="Hourly Prices"
-)
+# User selects the currency
+currency = st.selectbox('Select Currency', ['NOK', 'EUR'])
+currency_mapping = {
+    'NOK': 'NOK_per_kWh',
+    'EUR': 'EUR_per_kWh',
+}
+currency_column = currency_mapping[currency]
 
-# Display the chart
-st.altair_chart(chart)
+# Create a line chart for hourly prices using Plotly Express
+fig = px.line(all_data, x='time_start', y=currency_column, title="Hourly Prices")
+fig.update_xaxes(title_text="Time")
+fig.update_yaxes(title_text=f"{currency} per kWh")
 
+# Display the chart using st.plotly_chart
+st.plotly_chart(fig)
 
-#Add footer lik to data source
-# Create a footer at the bottom of the sidebar
-st.sidebar.markdown('<div style="text-align: center;">Data source API: <a href="https://www.hvakosterstrommen.no/strompris-api">hvakosterstrommen.no</a></div>', unsafe_allow_html=True)
+# Add a footer link to the data source
+st.markdown('<div style="text-align: center;">Data source API: <a href="https://www.hvakosterstrommen.no/strompris-api">hvakosterstrommen.no</a></div>', unsafe_allow_html=True)
