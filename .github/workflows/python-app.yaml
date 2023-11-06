@@ -1,0 +1,33 @@
+name: Update Dataset Job
+
+on:
+  schedule:
+    - cron: "0 0 * * *"  # This schedules the workflow to run daily at midnight (UTC time).
+
+jobs:
+  update-dataset:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8  
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+          source $HOME/.poetry/env
+        shell: bash
+
+      - name: Install dependencies
+        run: |
+          poetry install
+        working-directory: ${{ github.workspace }}
+
+      - name: Run the script
+        run: poetry run python update_dataset.py
+        working-directory: ${{ github.workspace }}
