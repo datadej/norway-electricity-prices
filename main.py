@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
+import plotly.express as px
 
 # Function to get energy prices for a specific date and area
 def get_energy_prices_for_date(date, price_area):
@@ -92,5 +93,49 @@ else:
 
 st.markdown(f"The current price for <strong>{price_area}</strong> is <strong>{current_price} {currency}</strong> per kWh.", unsafe_allow_html=True)
 
+# Add a new section for the historical prices chart
+st.header("Historical Prices Chart")
+
+# Load the dataset from the CSV file
+historical_prices_data = pd.read_csv('strompriser_dataset.csv')
+
+# Convert the 'time_start' and 'time_end' columns to datetime objects
+historical_prices_data['time_start'] = pd.to_datetime(historical_prices_data['time_start'])
+historical_prices_data['time_end'] = pd.to_datetime(historical_prices_data['time_end'])
+
+# Find the earliest 'time_start' in the dataset
+earliest_time_start = historical_prices_data['time_start'].min().strftime('%Y-%m-%d')
+
+# Find the latest 'time_end' in the dataset
+latest_time_end = historical_prices_data['time_end'].max().strftime('%Y-%m-%d')
+
+
+# Create a dictionary to map area codes to their meanings
+area_mapping = {
+    'NO1': 'Oslo / Øst-Norge',
+    'NO2': 'Kristiansand / Sør-Norge',
+    'NO3': 'Trondheim / Midt-Norge',
+    'NO4': 'Tromsø / Nord-Norge',
+    'NO5': 'Bergen / Vest-Norge'
+}
+
+# Map the area codes to their meanings in the DataFrame
+historical_prices_data['area'] = historical_prices_data['area'].map(area_mapping)
+
+# Create a line chart for historical hourly prices using Plotly Express
+historical_prices_chart = px.line(historical_prices_data, x='time_start', y=currency_column, color='area',
+                                  title=f"Historical Hourly Prices from {earliest_time_start} until {latest_time_end}",
+                                  labels={"area": "Area"})
+historical_prices_chart.update_xaxes(title_text="Time")
+historical_prices_chart.update_yaxes(title_text=f"{currency} per kWh")
+
+# Display the historical prices chart using st.plotly_chart
+st.plotly_chart(historical_prices_chart)
+
+
+
+
 # Add a footer link to the data source
 st.sidebar.markdown('<div style="text-align: center;">Data source API: <a href="https://www.hvakosterstrommen.no/strompris-api">hvakosterstrommen.no</a></div>', unsafe_allow_html=True)
+# Add a dummy st.markdown element at the end of the sidebar
+st.sidebar.markdown('')  # This element doesn't do anything
