@@ -24,7 +24,7 @@ def get_energy_prices_for_date(date, price_area):
 # Create a Streamlit app
 st.title("🇳🇴⚡️ Norway's Electricity Prices")
 
-paragraph_text = 'Explore real-time and historical electricity prices in different regions of Norway. Select your area, customize your date range, and choose your preferred currency to analyze energy costs.'
+paragraph_text = 'Explore real-time and historical electricity prices in different regions of Norway. From the sidebar select your area, customize your date range, and choose your preferred currency to analyze energy costs.'
 
 st.markdown(f'<span style="font-size: 18px;">{paragraph_text}</span>', unsafe_allow_html=True)
 
