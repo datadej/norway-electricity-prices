@@ -26,7 +26,9 @@ st.title("🇳🇴⚡️ Norway's Electricity Prices")
 
 paragraph_text = 'Explore real-time and historical electricity prices in different regions of Norway. Select your area, customize your date range, and choose your preferred currency to analyze energy costs.'
 
-st.markdown('<span style="font-size: 18px;">Explore real-time and historical electricity prices in different regions of Norway. Select your area, customize your date range, and choose your preferred currency to analyze energy costs.</span>', unsafe_allow_html=True)
+st.markdown(f'<span style="font-size: 18px;">{paragraph_text}</span>', unsafe_allow_html=True)
+
+st.header("Today's Hourly Prices Chart")
 
 # Area selection in the sidebar
 price_area = st.sidebar.selectbox("Select Area", ["NO1 - Oslo / Øst-Norge", "NO2 - Kristiansand / Sør-Norge", "NO3 - Trondheim / Midt-Norge", "NO4 - Tromsø / Nord-Norge", "NO5 - Bergen / Vest-Norge"])
@@ -39,18 +41,13 @@ price_area_mapping = {
 }
 selected_price_area = price_area_mapping[price_area]
 
-# Date range selection in the main area
+# Use the current date for the API query
 current_date = datetime.now()
-start_date = st.sidebar.date_input("Select Start Date", value=current_date - timedelta(days=0))
-end_date = st.sidebar.date_input("Select End Date", value=current_date)
 
-if start_date > end_date:
-    st.error("Start date should be before or the same as the end date.")
-
-# Fetch and accumulate data for the selected date range
+# Fetch and accumulate data for the current date and selected price area
 @st.cache(allow_output_mutation=True)
-def fetch_data(start_date, end_date, selected_price_area):
-    date_range = pd.date_range(start=start_date, end=end_date)
+def fetch_data(current_date, selected_price_area):
+    date_range = pd.date_range(start=current_date, periods=1, freq='H')
     data_frames = []
     for date in date_range:
         data_frame = get_energy_prices_for_date(date, selected_price_area)
@@ -58,7 +55,7 @@ def fetch_data(start_date, end_date, selected_price_area):
             data_frames.append(data_frame)
     return pd.concat(data_frames)
 
-all_data = fetch_data(start_date, end_date, selected_price_area)
+all_data = fetch_data(current_date, selected_price_area)
 
 # User selects the currency in the sidebar
 currency = st.sidebar.selectbox('Select Currency', ['NOK', 'EUR'])
@@ -72,11 +69,11 @@ currency_column = currency_mapping[currency]
 fig = go.Figure()
 
 # Add the line chart trace
-fig.add_trace(go.Scatter(x=all_data['time_start'], y=all_data[currency_column], mode='lines', name='Hourly Prices'))
+fig.add_trace(go.Scatter(x=all_data['time_start'], y=all_data[currency_column], mode='lines', line_shape='hv', name='Hourly Prices'))
 
 # Update the layout to make the chart responsive
 fig.update_layout(
-    title=f"Electricity prices from {start_date} until {end_date}",
+    title=f"Electricity prices for {selected_price_area} on {current_date.strftime('%Y-%m-%d')}",
     xaxis_title="Time",
     yaxis_title=f"{currency} per kWh",
     autosize=True,  # Set autosize to True for responsiveness
@@ -91,7 +88,7 @@ if currency == 'NOK':
 else:
     current_price = all_data.iloc[-1]["EUR_per_kWh"]
 
-st.markdown(f"The current price for <strong>{price_area}</strong> is <strong>{current_price} {currency}</strong> per kWh.", unsafe_allow_html=True)
+st.markdown(f"The current price for <strong>{price_area}</strong> on {current_date.strftime('%Y-%m-%d')} is <strong>{current_price} {currency}</strong> per kWh.", unsafe_allow_html=True)
 
 # Add a new section for the historical prices chart
 st.header("Historical Prices Chart")
@@ -108,7 +105,6 @@ earliest_time_start = historical_prices_data['time_start'].min().strftime('%Y-%m
 
 # Find the latest 'time_end' in the dataset
 latest_time_end = historical_prices_data['time_end'].max().strftime('%Y-%m-%d')
-
 
 # Create a dictionary to map area codes to their meanings
 area_mapping = {
@@ -132,10 +128,8 @@ historical_prices_chart.update_yaxes(title_text=f"{currency} per kWh")
 # Display the historical prices chart using st.plotly_chart
 st.plotly_chart(historical_prices_chart)
 
-
-
-
 # Add a footer link to the data source
 st.sidebar.markdown('<div style="text-align: center;">Data source API: <a href="https://www.hvakosterstrommen.no/strompris-api">hvakosterstrommen.no</a></div>', unsafe_allow_html=True)
 # Add a dummy st.markdown element at the end of the sidebar
 st.sidebar.markdown('')  # This element doesn't do anything
+
