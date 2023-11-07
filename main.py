@@ -73,14 +73,11 @@ fig.add_trace(go.Scatter(x=all_data['time_start'], y=all_data[currency_column], 
 
 # Update the layout to make the chart responsive
 fig.update_layout(
-    title=f"Electricity prices for {selected_price_area} on {current_date.strftime('%Y-%m-%d')}",
+    #title=f"Electricity prices for {selected_price_area} on {current_date.strftime('%Y-%m-%d')}",
     xaxis_title="Time",
     yaxis_title=f"{currency} per kWh",
     autosize=True,  # Set autosize to True for responsiveness
 )
-
-# Display the chart using st.plotly_chart
-st.plotly_chart(fig)
 
 # Display dynamic information
 if currency == 'NOK':
@@ -88,10 +85,17 @@ if currency == 'NOK':
 else:
     current_price = all_data.iloc[-1]["EUR_per_kWh"]
 
-st.markdown(f"The current price for <strong>{price_area}</strong> on {current_date.strftime('%Y-%m-%d')} is <strong>{current_price} {currency}</strong> per kWh.", unsafe_allow_html=True)
+#From df dataframe select the current price using current_date. 
+current_price = round(all_data[all_data['time_start'].str.contains(current_date.strftime("%H"), case=False, na=False)][currency_column].values[0],5)
 
-# Add a new section for the historical prices chart
-st.header("Historical Prices Chart")
+# Display the current price
+st.markdown(f"The electricity price in <strong>{price_area}</strong> is now <strong>{current_price} {currency}</strong> per kWh.", unsafe_allow_html=True)
+
+# Display the chart using st.plotly_chart
+st.plotly_chart(fig)
+
+
+#Prepare data for second chart
 
 # Load the dataset from the CSV file
 historical_prices_data = pd.read_csv('strompriser_dataset.csv')
@@ -107,8 +111,12 @@ historical_prices_data['date'] = historical_prices_data['time_start'].dt.date
 daily_historical_prices = historical_prices_data.groupby(['area', 'date'])[['NOK_per_kWh', 'EUR_per_kWh']].mean().reset_index()
 
 # Streamlit app title and header
-st.title("Average Daily Electricity Prices")
 st.header("Historical Daily Prices Chart")
+
+# Display today's average price
+today_average_price = round(all_data[currency_column].mean(),5)
+st.markdown(f"The average electricity price of today in <strong>{price_area}</strong> is <strong>{today_average_price} {currency}</strong> per kWh.", unsafe_allow_html=True)
+
 
 # Create a line chart for historical daily prices using Plotly Graph Objects
 fig = go.Figure()
@@ -125,9 +133,9 @@ for area in daily_historical_prices['area'].unique():
 
 # Customize the layout of the chart
 fig.update_layout(
-    title="Historical Daily Electricity Prices",
+    #title="Historical Daily Electricity Prices",
     xaxis_title="Date",
-    yaxis_title=f"{currency_column} per kWh",
+    yaxis_title=f"{currency} per kWH",
 )
 
 # Display the historical daily prices chart using st.plotly_chart
