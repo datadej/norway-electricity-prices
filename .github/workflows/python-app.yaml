@@ -1,8 +1,9 @@
 name: Update Dataset Job
 
 on:
-  schedule:
-    - cron: "0 0 * * *"  # This schedules the workflow to run daily at midnight (UTC time).
+  push:
+    branches:
+      - main  # Change this to your main branch name
 
 jobs:
   update-dataset:
