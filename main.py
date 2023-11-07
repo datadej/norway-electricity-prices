@@ -24,7 +24,7 @@ def get_energy_prices_for_date(date, price_area):
 # Create a Streamlit app
 st.title("🇳🇴⚡️ Norway's Electricity Prices")
 
-paragraph_text = 'Explore real-time and historical electricity prices in different regions of Norway. From the sidebar select your area, customize your date range, and choose your preferred currency to analyze energy costs.'
+paragraph_text = 'Explore real-time and historical electricity prices in different regions of Norway. From the sidebar select your area and your preferred currency to analyze energy costs.'
 
 st.markdown(f'<span style="font-size: 18px;">{paragraph_text}</span>', unsafe_allow_html=True)
 
@@ -90,6 +90,7 @@ current_price = round(all_data[all_data['time_start'].str.contains(current_date.
 
 # Display the current price
 st.markdown(f"The electricity price in <strong>{price_area}</strong> is now <strong>{current_price} {currency}</strong> per kWh.", unsafe_allow_html=True)
+st.markdown("Today's data is accessed in real time via the API of our data source")
 
 # Display the chart using st.plotly_chart
 st.plotly_chart(fig)
@@ -116,6 +117,7 @@ st.header("Historical Daily Prices Chart")
 # Display today's average price
 today_average_price = round(all_data[currency_column].mean(),5)
 st.markdown(f"The average electricity price of today in <strong>{price_area}</strong> is <strong>{today_average_price} {currency}</strong> per kWh.", unsafe_allow_html=True)
+st.markdown("Historical data is updated daily at 23:00 UTC by a GitHub workflow running daily and is stored in the [GitHub repository](https://github.com/datadej/norway-electricity-prices) of this dashboard")
 
 
 # Create a line chart for historical daily prices using Plotly Graph Objects
