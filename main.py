@@ -142,5 +142,6 @@ fig.update_layout(
 st.plotly_chart(fig)
 
 # Add a footer link to the data source
-st.sidebar.markdown('<div style="text-align: center;">Data source API: <a href="https://www.hvakosterstrommen.no/strompris-api">hvakosterstrommen.no</a></div>', unsafe_allow_html=True)
+st.sidebar.markdown('Data Provided by:')
+st.sidebar.markdown('<p><a href="https://www.hvakosterstrommen.no/strompris-api"><img src="https://ik.imagekit.io/ajdfkwyt/hva-koster-strommen/strompriser-levert-av-hvakosterstrommen_oTtWvqeiB.png" alt="Electricity Prices Source: Hva koster strømmen.no" width="200" height="45"></a></p>', unsafe_allow_html=True)
 
