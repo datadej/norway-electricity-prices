@@ -2,8 +2,7 @@ name: Update Dataset Job
 
 on:
   push:
-    branches:
-      - main  # Change this to your main branch name
+      - cron: '0 23 * * *' 
 
 jobs:
   update-dataset:
