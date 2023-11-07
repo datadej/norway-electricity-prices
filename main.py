@@ -96,40 +96,43 @@ st.header("Historical Prices Chart")
 # Load the dataset from the CSV file
 historical_prices_data = pd.read_csv('strompriser_dataset.csv')
 
-# Convert the 'time_start' and 'time_end' columns to datetime objects
-historical_prices_data['time_start'] = pd.to_datetime(historical_prices_data['time_start'])
-historical_prices_data['time_end'] = pd.to_datetime(historical_prices_data['time_end'])
+#Convert the 'time_start' and 'time_end' columns to datetime objects
+historical_prices_data['time_start'] = pd.to_datetime(historical_prices_data['time_start'], utc = True)
+historical_prices_data['time_end'] = pd.to_datetime(historical_prices_data['time_end'], utc = True)
 
-# Find the earliest 'time_start' in the dataset
-earliest_time_start = historical_prices_data['time_start'].min().strftime('%Y-%m-%d')
+# Extract the date portion from 'time_start'
+historical_prices_data['date'] = historical_prices_data['time_start'].dt.date
 
-# Find the latest 'time_end' in the dataset
-latest_time_end = historical_prices_data['time_end'].max().strftime('%Y-%m-%d')
+# Group by 'area' and 'date', and calculate the mean of NOK and EUR prices
+daily_historical_prices = historical_prices_data.groupby(['area', 'date'])[['NOK_per_kWh', 'EUR_per_kWh']].mean().reset_index()
 
-# Create a dictionary to map area codes to their meanings
-area_mapping = {
-    'NO1': 'Oslo / Øst-Norge',
-    'NO2': 'Kristiansand / Sør-Norge',
-    'NO3': 'Trondheim / Midt-Norge',
-    'NO4': 'Tromsø / Nord-Norge',
-    'NO5': 'Bergen / Vest-Norge'
-}
+# Streamlit app title and header
+st.title("Average Daily Electricity Prices")
+st.header("Historical Daily Prices Chart")
 
-# Map the area codes to their meanings in the DataFrame
-historical_prices_data['area'] = historical_prices_data['area'].map(area_mapping)
+# Create a line chart for historical daily prices using Plotly Graph Objects
+fig = go.Figure()
 
-# Create a line chart for historical hourly prices using Plotly Express
-historical_prices_chart = px.line(historical_prices_data, x='time_start', y=currency_column, color='area',
-                                  title=f"Historical Hourly Prices from {earliest_time_start} until {latest_time_end}",
-                                  labels={"area": "Area"})
-historical_prices_chart.update_xaxes(title_text="Time")
-historical_prices_chart.update_yaxes(title_text=f"{currency} per kWh")
+# Iterate through unique areas and create a line for each
+for area in daily_historical_prices['area'].unique():
+    area_data = daily_historical_prices[daily_historical_prices['area'] == area]
+    
+    # Get the label for the area using price_area_mapping
+    label = [key for key, value in price_area_mapping.items() if value == area][0]
+    
+    # Add a trace with the label
+    fig.add_trace(go.Scatter(x=area_data['date'], y=area_data[currency_column], mode='lines', name=label))
 
-# Display the historical prices chart using st.plotly_chart
-st.plotly_chart(historical_prices_chart)
+# Customize the layout of the chart
+fig.update_layout(
+    title="Historical Daily Electricity Prices",
+    xaxis_title="Date",
+    yaxis_title=f"{currency_column} per kWh",
+)
+
+# Display the historical daily prices chart using st.plotly_chart
+st.plotly_chart(fig)
 
 # Add a footer link to the data source
 st.sidebar.markdown('<div style="text-align: center;">Data source API: <a href="https://www.hvakosterstrommen.no/strompris-api">hvakosterstrommen.no</a></div>', unsafe_allow_html=True)
-# Add a dummy st.markdown element at the end of the sidebar
-st.sidebar.markdown('')  # This element doesn't do anything
 
