@@ -40,7 +40,7 @@ df = pd.DataFrame(all_data)
 df.head()
 
 # Append the DataFrame to an existing CSV file
-df.to_csv('strompriser_dataset.csv', mode='a', header=False, index=False)
+#df.to_csv('strompriser_dataset.csv', mode='a', header=False, index=False)
 
 
 # Print a message when the process is complete
